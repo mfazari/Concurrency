@@ -12,6 +12,3 @@ package ethz.ch.pp.assignment3.counters;
             return c;
         }
     }
-
-
-}
