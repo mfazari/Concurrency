@@ -1,6 +1,7 @@
 package assignment7;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class BankingSystem {
@@ -24,14 +25,33 @@ public class BankingSystem {
 	 * @return True if Money was transferred successfully.
 	 *         False if there was not enough balance in from.
 	 */
-	public boolean transferMoney(Account from, Account to, int amount) {	
-		if (from.getBalance() < amount) {
-			return false;
-		} else {
-			from.setBalance(from.getBalance() - amount);
-			to.setBalance(to.getBalance() + amount);
+	public boolean transferMoney(Account from, Account to, int amount) {
+		Account first, second;
+
+		if (to.getId() > from.getId()){
+			first = from;
+			second = to;
 		}
-		//System.out.println(from.getId());
+		else {
+			first = to;
+			second = from;
+		}
+
+		first.getLock().lock();
+		second.getLock().lock();
+		try {
+			if (from.getBalance() < amount) {
+				return false;
+			} else {
+				from.setBalance(from.getBalance() - amount);
+				to.setBalance(to.getBalance() + amount);
+			}
+
+		} finally {
+			first.getLock().unlock();
+			second.getLock().unlock();
+
+		}
 		return true;
 	}
 
@@ -41,16 +61,27 @@ public class BankingSystem {
 	 * @fixme Tends to return wrong results :-(
 	 */
 	public int sumAccounts(List<Account> accounts) {
-		int sum = 0;
+		// sort the accounts to ensure lock ordering
+		List<Account> sortedAccounts = new ArrayList<Account>(accounts);
+		Collections.sort(sortedAccounts);
 
-		for (Account a : accounts) {
-			synchronized(a) {
-				sum += a.getBalance();
-			}
+		int sum = 0;
+		for (Account a : sortedAccounts) {
+			// lock each account, but do not release it until we summed up
+			// all accounts in the list
+			a.getLock().lock();
+
+			sum += a.getBalance();
 		}
 
-		return sum;		
+		// release all accounts
+		for (Account a : sortedAccounts) {
+			a.getLock().unlock();
+		}
+
+		return sum;
 	}
+
 
 	/**
 	 * Calculates the total amount of money in the bank at any point in time.

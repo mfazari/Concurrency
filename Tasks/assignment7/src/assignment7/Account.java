@@ -1,9 +1,14 @@
 package assignment7;
 
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 public class Account implements Comparable<Account> {
 
 	private final int id;
 	private int balance;
+
+	private final Lock lock = new ReentrantLock();
 
 	/**
 	 * @param id Id of the account. You should make sure to set this is unique over all accounts.
@@ -37,6 +42,13 @@ public class Account implements Comparable<Account> {
 	 */
 	public int getId() {
 		return id;
+	}
+
+	/**
+	 * @return A reentrant lock associated with this account.
+	 */
+	public Lock getLock() {
+		return lock;
 	}
 
 	/**
