@@ -10,6 +10,7 @@ public class BridgeCondition extends Bridge {
 	//TODO use this given lock and create conditions form it
 	//you might find that you need some additional variables
 	final Lock bridgeLock = new ReentrantLock();
+	Condition truck
 
 	public void enterCar() throws InterruptedException {
 		bridgeLock.lock();
